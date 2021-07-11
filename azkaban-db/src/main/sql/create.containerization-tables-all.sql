@@ -1,3 +1,32 @@
+-- Stored Procedure for Creating Indexes to assure proper local boot
+SELECT @DB_NAME := DATABASE();
+DROP PROCEDURE IF EXISTS CreateIndex;
+CREATE PROCEDURE CreateIndex
+(
+    given_database  VARCHAR(64),
+    given_table     VARCHAR(64),
+    given_index     VARCHAR(64),
+    given_columns   VARCHAR(64)
+)
+BEGIN
+    DECLARE IndexExists INTEGER;
+
+    SELECT COUNT(1) INTO IndexExists
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE table_schema = given_database
+    AND table_name = given_table
+    AND index_name = given_index;
+
+    IF IndexExists = 0 THEN
+    SET @createIndex = CONCAT('CREATE INDEX ',given_index,' ON',
+    given_table,' (', given_column, ')';
+    PREPARE ex FROM @createIndex;
+    EXECUTE ex;
+    DEALLOCATE PREPARE ex;
+
+    END IF;
+END
+
 -- Definition for image_types table. This table is used for storing different image types
 CREATE TABLE IF NOT EXISTS image_types (
   id               INT             NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -11,11 +40,15 @@ CREATE TABLE IF NOT EXISTS image_types (
   modified_by      VARCHAR(64)     NOT NULL
 );
 
-CREATE INDEX image_types_name
-  ON image_types (name);
+-- CREATE INDEX image_types_name ON image_types (name);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_types_name',
+    given_table = 'image_types', given_column = 'name';
 
-CREATE INDEX image_types_active
-  ON image_types (active);
+
+
+-- CREATE INDEX image_types_active ON image_types (active);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_types_active',
+    given_table = 'image_types', given_column = 'active';
 
 -- Definition for image_versions table. This table is used for storing versions of an image type
 CREATE TABLE IF NOT EXISTS image_versions (
@@ -33,8 +66,9 @@ CREATE TABLE IF NOT EXISTS image_versions (
   UNIQUE (type_id, version)
 );
 
-CREATE INDEX image_versions_type_id
-  ON image_versions (type_id);
+-- CREATE INDEX image_versions_type_id ON image_versions (type_id);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_versions_type_id',
+    given_table = 'image_versions', given_column = 'type_id';
 
 -- Definition for image_ownerships table. This table is used for storing ownership information for
 -- an image type
@@ -49,9 +83,9 @@ CREATE TABLE IF NOT EXISTS image_ownerships (
   modified_by      VARCHAR(64)     NOT NULL
 );
 
-CREATE INDEX image_ownerships_type_id
-  ON image_ownerships (type_id);
-
+-- CREATE INDEX image_ownerships_type_id ON image_ownerships (type_id);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_ownerships_type_id',
+    given_table = 'image_ownerships', given_column = 'type_id';
 
 -- Definition for image_rampup_plan table. This table is used for creating rampup plan for an
 -- image type. Only one ramp up plan will be active at a time.
@@ -67,16 +101,13 @@ CREATE TABLE IF NOT EXISTS image_rampup_plan (
   modified_by      VARCHAR(64)     NOT NULL
 );
 
--- TODO: create index if not exists is not supported. Hence, current Azkaban codebase throws
---  duplicate index exception during build. This to be addressed separately. Commenting it for now.
---  One option is to move each table create scripts to separate file. But all the  containerization
---  tables are placed in this file so that it easier to manage.
+-- CREATE INDEX image_rampup_plan_type_id ON image_rampup_plan (type_id);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_rampup_plan_type_id',
+    given_table = 'image_rampup_plan', given_column = 'type_id';
 
-CREATE INDEX image_rampup_plan_type_id
-  ON image_rampup_plan (type_id);
-
-CREATE INDEX image_rampup_plan_active
-  ON image_rampup_plan (active);
+-- CREATE INDEX image_rampup_plan_active ON image_rampup_plan (active);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_rampup_plan_active',
+    given_table = 'image_rampup_plan', given_column = 'active';
 
 -- Definition for image_rampup table. This table contains information of the image versions being
 -- ramped up for an image type
@@ -92,11 +123,13 @@ CREATE TABLE IF NOT EXISTS image_rampup (
   modified_by       VARCHAR(64)    NOT NULL
 );
 
-CREATE INDEX image_rampup_plan_id
-  ON image_rampup (plan_id);
+-- CREATE INDEX image_rampup_plan_id ON image_rampup (plan_id);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_rampup_plan_id',
+    given_table = 'image_rampup', given_column = 'plan_id';
 
-CREATE INDEX image_rampup_version_id
-  ON image_rampup (version_id);
+-- CREATE INDEX image_rampup_version_id ON image_rampup (version_id);
+EXEC CreateIndex @given_database = @DB_NAME,  given_index = 'image_rampup_plan_id',
+    given_table = 'image_rampup', given_column = 'version_id';
 
 -- Definition for version_set table. Version set contains set of image versions and will be
 -- used during flow container launch
