@@ -1,4 +1,4 @@
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
   id               INT         NOT NULL PRIMARY KEY AUTO_INCREMENT,
   name             VARCHAR(64) NOT NULL,
   active           BOOLEAN,
