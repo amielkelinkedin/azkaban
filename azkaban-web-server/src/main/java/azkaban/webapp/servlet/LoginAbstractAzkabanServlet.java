@@ -736,7 +736,7 @@ public abstract class LoginAbstractAzkabanServlet extends AbstractAzkabanServlet
    * @param type
    * @return boolean
    */
-  protected boolean hasImageManagementPermission(final String imageTypeName, final User user,
+  public boolean hasImageManagementPermission(final String imageTypeName, final User user,
       final Permission.Type type) {
     final UserManager userManager = getApplication().getUserManager();
     for (final String roleName : user.getRoles()) {

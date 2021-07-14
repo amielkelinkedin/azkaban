@@ -153,6 +153,10 @@ public class ImageTypeDaoImpl implements ImageTypeDao {
       imageTypes = this.databaseOperator
           .query(FetchImageTypeHandler.FETCH_IMAGE_TYPE_BY_NAME, fetchImageTypeHandler,
               name.toLowerCase());
+      if (imageTypes == null) {
+        throw new ImageMgmtDaoException(ErrorCode.NOT_FOUND,
+            "Unable to fetch image type metadata from image type : " + name);
+      }
       // Check if there are more then one image types for a given name. If so throw exception
       if (imageTypes != null && imageTypes.size() > 1) {
         throw new ImageMgmtDaoException(ErrorCode.NOT_FOUND, "Failed to get image type with "
