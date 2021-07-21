@@ -92,8 +92,7 @@ public class ImageTypeServlet extends LoginAbstractAzkabanServlet {
         getImageTypeDTOByIdOrImageTypeName(resp, session, templateVariableToValue);
       } else if (GET_IMAGE_TYPE_URI.equals(req.getRequestURI())) {
         ImageTypeDTO imageTypeDTO;
-        if (!StringUtils.isEmpty(req.getQueryString()) && req.getQueryString()
-            .contains(IMAGE_TYPE)) {
+        if (req.getQueryString().contains(IMAGE_TYPE)) {
           final String imageTypeName = HttpRequestUtils
               .getParam(req, ImageMgmtConstants.IMAGE_TYPE);
           if (!hasImageManagementPermission(imageTypeName, session.getUser(), Type.GET)) {
