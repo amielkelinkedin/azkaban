@@ -15,6 +15,7 @@
  */
 package azkaban.imagemgmt.daos;
 
+import azkaban.imagemgmt.dto.ImageTypeDTO;
 import azkaban.imagemgmt.exception.ImageMgmtException;
 import azkaban.imagemgmt.models.ImageOwnership;
 import azkaban.imagemgmt.models.ImageType;
@@ -79,4 +80,5 @@ public interface ImageTypeDao {
   public Optional<ImageOwnership> getImageTypeOwnership(final String imageTypeName,
       final String userId) throws ImageMgmtException;
 
+  public ImageType getImageTypeWithOwnershipsById(String id);
 }

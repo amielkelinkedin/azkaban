@@ -18,6 +18,7 @@ package azkaban.imagemgmt.services;
 import azkaban.imagemgmt.dto.ImageTypeDTO;
 import azkaban.imagemgmt.exception.ImageMgmtException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * This service layer interface exposes methods for delegation and processing business logic for
@@ -25,6 +26,10 @@ import java.io.IOException;
  * Eventually the requests are routed to the DAO layer for data access.
  */
 public interface ImageTypeService {
+
+  public List<ImageTypeDTO> getAllImageTypesWithOwnerships();
+
+  public ImageTypeDTO findImageTypeWithOwnershipsById(String id);
 
   /**
    * Method for finding image type by name.
@@ -34,7 +39,7 @@ public interface ImageTypeService {
    * @throws ImageMgmtException
    */
 
-  public ImageTypeDTO findImageTypeWithOwnersByName(String imageTypeName) throws ImageMgmtException;
+  public ImageTypeDTO findImageTypeWithOwnershipsByName(String imageTypeName) throws ImageMgmtException;
 
   /**
    * Method for processing and delegation of image type creation/registration.
@@ -45,4 +50,5 @@ public interface ImageTypeService {
    * @throws ImageMgmtException
    */
   public int createImageType(ImageTypeDTO imageType) throws ImageMgmtException;
+
 }
