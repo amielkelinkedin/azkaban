@@ -20,21 +20,37 @@ package azkaban.webapp.servlet;
 import static azkaban.test.Utils.initServiceProvider;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import azkaban.fixture.MockLoginAzkabanServlet;
+import azkaban.user.Permission;
+import azkaban.user.Permission.Type;
+import azkaban.user.Role;
+import azkaban.user.User;
+import azkaban.user.User.UserPermissions;
+import azkaban.user.UserManager;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class LoginAbstractAzkabanServletTest {
+
+  private LoginAbstractAzkabanServlet loginAbstractAzkabanServlet =
+      mock(LoginAbstractAzkabanServlet.class);
 
   @Before
   public void setUp() {
@@ -217,5 +233,20 @@ public class LoginAbstractAzkabanServletTest {
     // Assert that expected error message is returned
     assertEquals("Login error. Must pass username and password in request body", writer.toString());
 
+  }
+
+  @Test
+  public void testIsAzkabanAdminForAdmin() throws Exception {
+    User user = mock(User.class);
+    UserManager userManager = mock(UserManager.class);
+    Permission permission = new Permission(Type.ADMIN);
+    Role role = new Role("Admin", permission);
+
+    List<String> roles = new ArrayList<>();
+    roles.add("admin");
+    when(user.getRoles()).thenReturn(roles);
+    when(userManager.getRole(roles.get(0))).thenReturn(role);
+    boolean isAdmin = loginAbstractAzkabanServlet.isAzkabanAdmin(any(User.class));
+    Assert.assertEquals(isAdmin, true);
   }
 }
