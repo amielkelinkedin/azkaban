@@ -384,13 +384,13 @@ azkaban.EditTableView = Backbone.View.extend({
     $(tdName).addClass("editable");
 
     $(tdValue).append(valueData);
-    $(tdValue).append(remove);
     $(tdValue).addClass("editable").addClass('value');
 
     $(tr).addClass("editRow");
     $(tr).append(tdJobOrFlow);
     $(tr).append(tdName);
     $(tr).append(tdValue);
+    $(tr).append(remove);
 
     $(tr).insertBefore(".addRow");
     return tr;
