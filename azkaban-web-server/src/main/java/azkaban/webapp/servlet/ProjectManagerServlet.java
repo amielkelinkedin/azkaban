@@ -1315,7 +1315,14 @@ public class ProjectManagerServlet extends LoginAbstractAzkabanServlet {
               + projectName + ".");
         }
 
-        page.add("project", project);
+        page.add("name", project.getName());
+        page.add("id", project.getId());
+        //params for projectsidebar
+        page.add("description",project.getDescription());
+        page.add("createTimestamp",project.getCreateTimestamp());
+        page.add("lastModifiedTimestamp",project.getLastModifiedTimestamp());
+        page.add("lastModifiedUser",project.getLastModifiedUser());
+
         page.add("admins", Utils.flattenToString(
             project.getUsersWithPermission(Type.ADMIN), ","));
         final Permission perm = this.getPermissionObject(project, user, Type.ADMIN);
@@ -1434,7 +1441,13 @@ public class ProjectManagerServlet extends LoginAbstractAzkabanServlet {
               + projectName + ".");
         }
 
-        page.add("project", project);
+        page.add("name", project.getName());
+        //params for projectsidebar
+        page.add("description",project.getDescription());
+        page.add("createTimestamp",project.getCreateTimestamp());
+        page.add("lastModifiedTimestamp",project.getLastModifiedTimestamp());
+        page.add("lastModifiedUser",project.getLastModifiedUser());
+
         page.add("username", user.getUserId());
         page.add("admins", Utils.flattenToString(
             project.getUsersWithPermission(Type.ADMIN), ","));
@@ -1758,7 +1771,14 @@ public class ProjectManagerServlet extends LoginAbstractAzkabanServlet {
               + projectName + ".");
         }
 
-        page.add("project", project);
+        page.add("name", project.getName());
+        page.add("id", project.getId());
+        //params for projectsidebar
+        page.add("description",project.getDescription());
+        page.add("createTimestamp",project.getCreateTimestamp());
+        page.add("lastModifiedTimestamp",project.getLastModifiedTimestamp());
+        page.add("lastModifiedUser",project.getLastModifiedUser());
+
         page.add("admins", Utils.flattenToString(
             project.getUsersWithPermission(Type.ADMIN), ","));
         final Permission perm = this.getPermissionObject(project, user, Type.ADMIN);
