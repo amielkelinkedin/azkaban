@@ -649,6 +649,8 @@ public class Constants {
         AZKABAN_CONTAINERIZED_PREFIX + "jobtype.allowlist";
     public static final String CONTAINERIZED_PROXY_USER_DENYLIST =
         AZKABAN_CONTAINERIZED_PREFIX + "proxy.user.denylist";
+    public static final String ENABLE_POD_LOGGING = AZKABAN_CONTAINERIZED_PREFIX +
+        "enable.execution.stopped.logging";
 
     // Kubernetes related properties
     public static final String AZKABAN_KUBERNETES_PREFIX = "azkaban.kubernetes.";
