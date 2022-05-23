@@ -149,7 +149,6 @@ public class ContainerCleanupManagerTest {
         .fetchStaleFlowsForStatus(any(Status.class), any(ImmutableMap.class)))
         .thenReturn(executableFlows);
     this.cleaner.cleanUpContainersInTerminalStatuses();
-    verify(this.containerImpl).deletePod(1000);
-    verify(this.containerImpl, Mockito.times(0)).deletePod(1001);
+    verify(this.containerImpl, Mockito.times(0)).deleteContainer(1001);
   }
 }

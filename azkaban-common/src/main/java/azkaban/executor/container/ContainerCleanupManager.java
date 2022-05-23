@@ -172,13 +172,7 @@ public class ContainerCleanupManager {
       if (!activeFlows.contains(executionId)) {
         logger.info("Cleaning up the stale pod and service for finished execution: {}",
             executionId);
-        try {
-          this.containerizedImpl.deletePod(executionId);
-          this.containerizedImpl.deleteService(executionId);
-        } catch (ExecutorManagerException eme) {
-          logger.info("ExecutorManagerException throw when trying to delete executionId {} in "
-              + "terminal status: {}", executionId, eme);
-        }
+        deleteContainerQuietly(executionId);
       }
     }
   }
@@ -264,7 +258,7 @@ public class ContainerCleanupManager {
     }
   }
 
-  // Deletes the container specified by executionId while logging and consuming any exceptions.
+  // Deletes the container specified by Flow while logging and consuming any exceptions.
   // Note that while this method is not async it's still expected to return 'quickly'. This is true
   // for Kubernetes as it's declarative API will only submit the request for deleting container
   // resources. In future we can consider making this async to eliminate any chance of the cleanup
@@ -272,6 +266,21 @@ public class ContainerCleanupManager {
   private void deleteContainerQuietly(final ExecutableFlow flow) {
     try {
       this.containerizedImpl.deleteContainer(flow);
+    } catch (final ExecutorManagerException eme) {
+      logger.error("ExecutorManagerException while deleting container.", eme);
+    } catch (final RuntimeException re) {
+      logger.error("Unexpected RuntimeException while deleting container.", re);
+    }
+  }
+
+  // Deletes the container specified by executionId while logging and consuming any exceptions.
+  // Note that while this method is not async it's still expected to return 'quickly'. This is true
+  // for Kubernetes as it's declarative API will only submit the request for deleting container
+  // resources. In future we can consider making this async to eliminate any chance of the cleanup
+  // thread getting blocked.
+  private void deleteContainerQuietly(final int execId) {
+    try {
+      this.containerizedImpl.deleteContainer(execId);
     } catch (final ExecutorManagerException eme) {
       logger.error("ExecutorManagerException while deleting container.", eme);
     } catch (final RuntimeException re) {

@@ -425,6 +425,25 @@ public class KubernetesContainerizedImpl extends EventHandler implements Contain
   }
 
   /**
+   * This method is used to delete container. It will delete pod for a flow execution. If the
+   * service was created then it will also delete the service. This method can be called as a part
+   * of cleanup process for containers in case containers didn't shutdown gracefully.
+   *
+   * @param flow
+   * @throws ExecutorManagerException
+   */
+  @Override
+  public synchronized void deleteContainer(final int execId) throws ExecutorManagerException {
+    try { // if pod deletion is not successful, the service deletion can still be handled
+      deletePod(execId);
+    } finally {
+      if (isServiceRequired()) {
+        deleteService(execId);
+      }
+    }
+  }
+
+  /**
    * This method is used to fetch all pods in the current az cluster and namespace that are
    * created a time duration ago
    * @param containerDuration duration between container start timestamp and current timestamp
@@ -1231,7 +1250,6 @@ public class KubernetesContainerizedImpl extends EventHandler implements Contain
     deletePod(flow.getExecutionId());
   }
 
-  @Override
   public void deletePod(final int executionId) throws ExecutorManagerException {
     final String podName = getPodName(executionId);
     try {
@@ -1256,10 +1274,9 @@ public class KubernetesContainerizedImpl extends EventHandler implements Contain
   /**
    * This method is used to delete service in Kubernetes which is created for Pod.
    *
-   * @param flow
+   * @param executionId
    * @throws ExecutorManagerException
    */
-  @Override
   public void deleteService(final int executionId) throws ExecutorManagerException {
     requireNonNull(executionId, "The executionId must not be null");
     final String serviceName = getServiceName(executionId);
