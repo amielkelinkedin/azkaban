@@ -649,8 +649,6 @@ public class Constants {
         AZKABAN_CONTAINERIZED_PREFIX + "jobtype.allowlist";
     public static final String CONTAINERIZED_PROXY_USER_DENYLIST =
         AZKABAN_CONTAINERIZED_PREFIX + "proxy.user.denylist";
-    public static final String ENABLE_POD_LOGGING = AZKABAN_CONTAINERIZED_PREFIX +
-        "enable.execution.stopped.logging";
 
     // Kubernetes related properties
     public static final String AZKABAN_KUBERNETES_PREFIX = "azkaban.kubernetes.";
@@ -667,6 +665,8 @@ public class Constants {
         AZKABAN_KUBERNETES_PREFIX + "azkaban-config.image.name";
     public static final String KUBERNETES_POD_SERVICE_ACCOUNT_TOKEN_AUTOMOUNT =
         KUBERNETES_POD_PREFIX + "service.account.token.automount";
+    public static final String ENABLE_POD_LOGGING = AZKABAN_KUBERNETES_PREFIX +
+        "enable.pod.logging";
 
     // Kubernetes flow container related properties
     public static final String KUBERNETES_FLOW_CONTAINER_PREFIX = AZKABAN_KUBERNETES_PREFIX +
