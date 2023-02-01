@@ -26,6 +26,7 @@ import azkaban.user.Permission.Type;
 import azkaban.user.User;
 import azkaban.utils.Pair;
 import com.google.common.collect.ImmutableMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +55,11 @@ public class Project extends EventHandler {
   private long createTimestamp;
   private long lastModifiedTimestamp;
   private String lastModifiedUser;
+  private String uploadUser;
   private String source;
   private Map<String, Flow> flows = new HashMap<>();
   // flowResourceRecommendations map shouldn't be ImmutableMap.
-  private HashMap<String, FlowResourceRecommendation> flowResourceRecommendations = new HashMap<>();
+  private ConcurrentHashMap<String, FlowResourceRecommendation> flowResourceRecommendations = new ConcurrentHashMap<>();
   private Map<String, Object> metadata = new HashMap<>();
   private static final Logger logger = LoggerFactory.getLogger(Project.class);
   // Added event listener for sending project events
@@ -86,6 +88,7 @@ public class Project extends EventHandler {
     final String description = (String) projectObject.get("description");
     final String lastModifiedUser = (String) projectObject.get("lastModifiedUser");
     final long createTimestamp = coerceToLong(projectObject.get("createTimestamp"));
+    final String uploadUser = (String) projectObject.get("uploadUser");
     final long lastModifiedTimestamp =
         coerceToLong(projectObject.get("lastModifiedTimestamp"));
     final String source = (String) projectObject.get("source");
@@ -102,6 +105,7 @@ public class Project extends EventHandler {
     project.setLastModifiedTimestamp(lastModifiedTimestamp);
     project.setLastModifiedUser(lastModifiedUser);
     project.setActive(active);
+    project.setUploadUser(uploadUser);
 
     if (source != null) {
       project.setSource(source);
@@ -160,12 +164,8 @@ public class Project extends EventHandler {
     return this.flowResourceRecommendations.get(flowId);
   }
 
-  public Map<String, FlowResourceRecommendation> getFlowResourceRecommendationMap() {
+  public ConcurrentHashMap<String, FlowResourceRecommendation> getFlowResourceRecommendationMap() {
     return this.flowResourceRecommendations;
-  }
-
-  public void setFlowResourceRecommendations(@Nonnull final HashMap<String, FlowResourceRecommendation> flowResourceRecommendations) {
-    this.flowResourceRecommendations = flowResourceRecommendations;
   }
 
   public Permission getCollectivePermission(final User user) {
@@ -342,6 +342,7 @@ public class Project extends EventHandler {
     projectObject.put("lastModifiedTimestamp", this.lastModifiedTimestamp);
     projectObject.put("lastModifiedUser", this.lastModifiedUser);
     projectObject.put("version", this.version);
+    projectObject.put("uploadUser", this.uploadUser);
 
     if (!this.active) {
       projectObject.put("active", false);
@@ -367,6 +368,13 @@ public class Project extends EventHandler {
 
   public void setLastModifiedUser(final String lastModifiedUser) {
     this.lastModifiedUser = lastModifiedUser;
+  }
+
+  public void setUploadUser(final String uploadUser) {
+    this.uploadUser = uploadUser;
+  }
+  public String getUploadUser() {
+    return this.uploadUser;
   }
 
   @Override

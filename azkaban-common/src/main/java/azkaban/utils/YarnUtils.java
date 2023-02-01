@@ -17,13 +17,24 @@ package azkaban.utils;
 
 import static azkaban.Constants.FlowProperties.AZKABAN_FLOW_EXEC_ID;
 
+import azkaban.cluster.Cluster;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.log4j.Logger;
@@ -60,8 +71,7 @@ public class YarnUtils {
   }
 
   /**
-   * Use the yarnClient to query the unfinished yarn applications, then use the yarnClient to kill
-   * them sequentially
+   * Use the yarnClient to query the unfinished yarn applications for 1 flow execution
    *
    * @param yarnClient the yarnClient already connects to the cluster
    * @param flowExecID the azkaban flow execution id whose yarn applications needs to be killed
@@ -81,17 +91,53 @@ public class YarnUtils {
   }
 
   /**
-   * Uses YarnClient to kill the jobs one by one
+   * Use the yarnClient to query the unfinished yarn applications using a set of flow execution IDs
+   * (the union of yarn applications tagged with any of the flow execution IDs)
+   */
+  public static List<ApplicationReport> getAllAliveAppReportsByExecIDs(final YarnClient yarnClient,
+      final Set<Integer> flowExecIDs, final Logger log)
+      throws IOException, YarnException {
+    if (flowExecIDs.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    Set<String> searchTags = flowExecIDs.stream()
+        .map(id -> AZKABAN_FLOW_EXEC_ID + ":" + id)
+        .collect(Collectors.toSet());
+    log.info(String.format("Searching for alive yarn application reports with tags %s",
+        searchTags));
+
+    return yarnClient.getApplications(null, YARN_APPLICATION_ALIVE_STATES, searchTags);
+  }
+
+
+  /**
+   * Uses YarnClient to kill the jobs one by one, each kill has a timeout
    */
   public static void killAllAppsOnCluster(YarnClient yarnClient, Set<String> applicationIDs,
       Logger log) {
     log.info(String.format("Killing applications: %s", applicationIDs));
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
     for (final String appId : applicationIDs) {
+      Future<?> future = executor.submit(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            YarnUtils.killAppOnCluster(yarnClient, appId, log);
+          } catch (final Throwable t) {
+            log.warn("something happened while trying to kill this job: " + appId, t);
+          }
+        }
+      });
+      // wait for the kill with a timeout
       try {
-        YarnUtils.killAppOnCluster(yarnClient, appId, log);
-      } catch (final Throwable t) {
-        log.warn("something happened while trying to kill this job: " + appId, t);
+        future.get(YARN_APP_TIMEOUT_IN_MILLIONSECONDS, TimeUnit.MILLISECONDS);
+      } catch (TimeoutException e) {
+        log.warn("Timed out killing the yarn app " + appId + ", cancelling the runnable...");
+        future.cancel(true);
+      } catch (Exception e) {
+        log.warn("Exception trying to get the future killing this job: " + appId);
       }
     }
   }
@@ -114,6 +160,35 @@ public class YarnUtils {
     log.info("start killing application: " + aid);
     yarnClient.killApplication(aid);
     log.info("successfully killed application: " + aid);
+  }
+
+  public static void killApplicationAsProxyUser(Cluster cluster,
+      ApplicationReport app, final Logger log)
+      throws IOException, InterruptedException {
+    try {
+      UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+          app.getUser(), UserGroupInformation.getLoginUser());
+      proxyUser.doAs(new PrivilegedExceptionAction<Void>() {
+        @Override
+        public Void run() throws Exception {
+
+          log.info("proxy as user: " + proxyUser);
+          for (Token<?> token : proxyUser.getTokens()) {
+            proxyUser.addToken(token);
+            log.info(String.format("proxyUser.token = %s, %s, %s ", token.getKind(),
+                token.getService(),
+                Arrays.toString(token.getIdentifier())));
+          }
+
+          YarnClient yarnClient = createYarnClient(cluster.getProperties(), log);
+          yarnClient.killApplication(app.getApplicationId());
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      log.warn("Fail to killApplication as proxy user " + app.getUser(), e);
+      throw new RuntimeException("Fail to killApplication as proxy user " + app.getUser(), e);
+    }
   }
 
   /**

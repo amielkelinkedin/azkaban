@@ -70,6 +70,7 @@ import azkaban.metrics.ContainerizationMetrics;
 import azkaban.metrics.ContainerizationMetricsImpl;
 import azkaban.metrics.DummyContainerizationMetricsImpl;
 import azkaban.project.ProjectManager;
+import azkaban.scheduler.MissedSchedulesManager;
 import azkaban.scheduler.ScheduleLoader;
 import azkaban.scheduler.TriggerBasedScheduleLoader;
 import azkaban.user.UserManager;

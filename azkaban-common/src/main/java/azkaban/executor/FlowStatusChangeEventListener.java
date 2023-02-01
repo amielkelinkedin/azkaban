@@ -72,6 +72,7 @@ public class FlowStatusChangeEventListener implements EventListener<Event> {
           props.getString(JETTY_HOSTNAME, "localhost")));
     }
     metaData.put(EventReporterConstants.PROJECT_NAME, flow.getProjectName());
+    metaData.put(EventReporterConstants.PROJECT_FILE_UPLOAD_USER, flow.getUploadUser());
     metaData.put(EventReporterConstants.SUBMIT_USER, flow.getSubmitUser());
     metaData.put(EventReporterConstants.EXECUTION_ID, String.valueOf(flow.getExecutionId()));
     metaData.put(EventReporterConstants.SUBMIT_TIME, String.valueOf(flow.getSubmitTime()));
@@ -79,6 +80,14 @@ public class FlowStatusChangeEventListener implements EventListener<Event> {
     metaData.put(EventReporterConstants.FLOW_STATUS, flow.getStatus().name());
     metaData.put(EventReporterConstants.EXECUTION_RETRIED_BY_AZKABAN,
         String.valueOf(flow.getExecutionOptions().isExecutionRetried()));
+    if (flow.isOOMKilled()) {
+      metaData.put(EventReporterConstants.IS_OOM_KILLED,
+          String.valueOf(flow.isOOMKilled()));
+    }
+    if (flow.isVPAEnabled()) {
+      metaData.put(EventReporterConstants.IS_POD_SIZE_AUTOSCALING_ENABLED,
+          String.valueOf(flow.isVPAEnabled()));
+    }
     // Add flow start time and end time, default value -1
     metaData.put(EventReporterConstants.START_TIME, String.valueOf(flow.getStartTime()));
     metaData.put(EventReporterConstants.END_TIME, String.valueOf(flow.getEndTime()));

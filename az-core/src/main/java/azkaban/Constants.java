@@ -177,6 +177,14 @@ public class Constants {
    */
   public static final String PARAM_OVERRIDE_FILE = "param_override.properties";
 
+  /**
+   * Missed Schedule Props
+   * */
+  public static final String MISSED_SCHEDULE_MANAGER_ENABLED = "azkaban.missed.schedule.manager.enabled";
+  public static final String MISSED_SCHEDULE_THREAD_POOL_SIZE = "azkaban.missed.schedule.task.threads";
+  public static final boolean DEFAULT_BACK_EXECUTE_ONCE_ON_MISSED_SCHEDULE = false;
+
+
   // Azkaban event reporter constants
   public static class EventReporterConstants {
 
@@ -199,6 +207,8 @@ public class Constants {
     public static final String FLOW_PAUSE_DURATION = "flowPauseDuration";
     public static final String FLOW_PREPARATION_DURATION = "flowPreparationDuration";
     public static final String EXECUTION_RETRIED_BY_AZKABAN = "executionRetriedByAzkaban";
+    public static final String IS_OOM_KILLED = "isOOMKilled";
+    public static final String IS_POD_SIZE_AUTOSCALING_ENABLED = "isPodSizeAutoscaled";
     public static final String ORIGINAL_FLOW_EXECUTION_ID_BEFORE_RETRY =
         "originalFlowExecutionIdBeforeRetry";
     public static final String SLA_OPTIONS = "slaOptions";
@@ -379,7 +389,7 @@ public class Constants {
     // Max flow KILLING time in mins.
     public static final String AZKABAN_MAX_FLOW_KILLING_MINS = "azkaban.server.flow.max.killing.minutes";
     // Max flow EXECUTION_STOPPED time in mins.
-    public static final String AZKABAN_MAX_FLOW_EXEC_STOPPED_MINS = "azkaban.server.flow.max.exec_stopped.minutes";
+    public static final String AZKABAN_FLOW_RECENT_TERMINATION_MINS = "azkaban.server.flow.recent.termination.minutes";
 
     // Maximum number of tries to download a dependency (no more retry attempts will be made after this many download failures)
     public static final String AZKABAN_DEPENDENCY_MAX_DOWNLOAD_TRIES = "azkaban.dependency.max.download.tries";
@@ -676,6 +686,9 @@ public class Constants {
         "azkaban-base.image.name";
     public static final String KUBERNETES_POD_AZKABAN_CONFIG_IMAGE_NAME =
         AZKABAN_KUBERNETES_PREFIX + "azkaban-config.image.name";
+    public static final String KUBERNETES_POD_AZKABAN_SECURITY_INIT_IMAGE_NAME =
+        AZKABAN_KUBERNETES_PREFIX + "azkaban-security-init.image.name";
+
     public static final String KUBERNETES_POD_SERVICE_ACCOUNT_TOKEN_AUTOMOUNT =
         KUBERNETES_POD_PREFIX + "service.account.token.automount";
 
@@ -684,15 +697,28 @@ public class Constants {
         "flow.container.";
     public static final String KUBERNETES_FLOW_CONTAINER_NAME =
         KUBERNETES_FLOW_CONTAINER_PREFIX + ".name";
+    public static final String KUBERNETES_FLOW_CONTAINER_CPU_RECOMMENDATION_MULTIPLIER =
+        KUBERNETES_FLOW_CONTAINER_PREFIX + "cpu.recommendation.multiplier";
     public static final String KUBERNETES_FLOW_CONTAINER_CPU_LIMIT_MULTIPLIER =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "cpu.limit.multiplier";
+    // Provide min allowed cpu for ramping up VPA in case if unfortunately VPA gives incorrect extremely
+    // low CPU recommendation. This config can be removed in the future once VPA feature is stable.
+    public static final String KUBERNETES_FLOW_CONTAINER_MIN_ALLOWED_CPU =
+        KUBERNETES_FLOW_CONTAINER_PREFIX + "min.allowed.cpu";
     public static final String KUBERNETES_FLOW_CONTAINER_MAX_ALLOWED_CPU =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "max.allowed.cpu";
     public static final String KUBERNETES_FLOW_CONTAINER_CPU_REQUEST =
         KUBERNETES_FLOW_CONTAINER_PREFIX +
             "cpu.request";
+    public static final String KUBERNETES_FLOW_CONTAINER_MEMORY_RECOMMENDATION_MULTIPLIER =
+        KUBERNETES_FLOW_CONTAINER_PREFIX + "memory.recommendation.multiplier";
     public static final String KUBERNETES_FLOW_CONTAINER_MEMORY_LIMIT_MULTIPLIER =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "memory.limit.multiplier";
+    // Provide min allowed memory for ramping up VPA in case if unfortunately VPA gives incorrect
+    // extremely low memory recommendation. This config can be removed in the future once VPA
+    // feature is stable.
+    public static final String KUBERNETES_FLOW_CONTAINER_MIN_ALLOWED_MEMORY =
+        KUBERNETES_FLOW_CONTAINER_PREFIX + "min.allowed.memory";
     public static final String KUBERNETES_FLOW_CONTAINER_MAX_ALLOWED_MEMORY =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "max.allowed.memory";
     public static final String KUBERNETES_FLOW_CONTAINER_MEMORY_REQUEST =
@@ -710,6 +736,8 @@ public class Constants {
 
     public static final String KUBERNETES_INIT_MOUNT_PATH_FOR_JOBTYPES =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "init.jobtypes.mount.path";
+    public static final String PREFETCH_PROXY_USER_CERTIFICATES =
+        AZKABAN_CONTAINERIZED_PREFIX + "prefetch.certificates";
     public static final String KUBERNETES_MOUNT_PATH_FOR_JOBTYPES =
         KUBERNETES_FLOW_CONTAINER_PREFIX + "jobtypes.mount.path";
     public static final String KUBERNETES_POD_TEMPLATE_PATH =
@@ -738,6 +766,12 @@ public class Constants {
         KUBERNETES_VPA_PREFIX + "max.allowed.no.recommendation.since.creation.sec";
     public static final String KUBERNETES_VPA_MAX_ALLOWED_GET_RECOMMENDATION_TIMEOUT_SEC =
         KUBERNETES_VPA_PREFIX + "max.allowed.get.recommendation.timeout.sec";
+    public static final String KUBERNETES_VPA_NAME_PREFIX = KUBERNETES_VPA_PREFIX +
+        "name.prefix";
+    public static final String KUBERNETES_VPA_RAMPUP =
+        KUBERNETES_VPA_PREFIX + "rampup";
+    public static final String KUBERNETES_VPA_ENABLED =
+        KUBERNETES_VPA_PREFIX + "enabled";
 
     // Kubernetes Watch related properties
     public static final String KUBERNETES_WATCH_PREFIX = AZKABAN_KUBERNETES_PREFIX + "watch.";
@@ -756,6 +790,12 @@ public class Constants {
         AZKABAN_CONTAINERIZED_PREFIX + "stale.execution.cleanup.interval.min";
     public static final String CONTAINERIZED_STALE_CONTAINER_CLEANUP_INTERVAL_MIN =
         AZKABAN_CONTAINERIZED_PREFIX + "stale.container.cleanup.interval.min";
+    public static final String CONTAINERIZED_YARN_APPLICATION_CLEANUP_INTERVAL_MIN =
+        AZKABAN_CONTAINERIZED_PREFIX + "yarn.application.cleanup.interval.min";
+    public static final String CONTAINERIZED_YARN_APPLICATION_CLEANUP_TIMEOUT_MIN =
+        AZKABAN_CONTAINERIZED_PREFIX + "yarn.application.cleanup.timeout.min";
+    public static final String CONTAINERIZED_YARN_APPLICATION_CLEANUP_PARALLELISM =
+        AZKABAN_CONTAINERIZED_PREFIX + "yarn.application.cleanup.parallelism";
 
     public static final String ENV_VERSION_SET_ID = "VERSION_SET_ID";
     public static final String ENV_FLOW_EXECUTION_ID = "FLOW_EXECUTION_ID";
@@ -763,6 +803,7 @@ public class Constants {
     public static final String ENV_ENABLE_DEV_POD = "ENABLE_DEV_POD";
     public static final String ENV_CPU_REQUEST = "CPU_REQUEST";
     public static final String ENV_MEMORY_REQUEST = "MEMORY_REQUEST";
+
   }
 
   public static class LogConstants {
