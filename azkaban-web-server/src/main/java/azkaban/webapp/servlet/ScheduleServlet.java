@@ -207,9 +207,7 @@ public class ScheduleServlet extends LoginAbstractAzkabanServlet {
         return;
       }
 
-      final String emailStr = getParam(req, PARAM_SLA_EMAILS);
-      final Map<String, String> settings = getParamGroup(req, PARAM_SETTINGS);
-      final List<SlaOption> slaOptions = SlaRequestUtils.parseSlaOptions(sched.getFlowName(), emailStr, settings);
+      final List<SlaOption> slaOptions = SlaRequestUtils.parseSlaOptions(req, sched.getFlowName(), PARAM_SETTINGS);
 
       if (slaOptions.isEmpty()) {
         throw new ScheduleManagerException(
@@ -580,7 +578,7 @@ public class ScheduleServlet extends LoginAbstractAzkabanServlet {
     final Schedule schedule =
         this.scheduleManager.cronScheduleFlow(-1, projectId, projectName, flowName, "ready", firstSchedTime.getMillis(),
             endSchedTime, firstSchedTime.getZone(), DateTime.now().getMillis(), firstSchedTime.getMillis(),
-            firstSchedTime.getMillis(), user.getUserId(), flowOptions, cronExpression);
+            firstSchedTime.getMillis(), user.getUserId(), flowOptions, cronExpression, backExecutionOnceEnabled);
 
     logger.info("User '" + user.getUserId() + "' has scheduled " + "[" + projectName + flowName + " (" + projectId + ")"
         + "] with backExecuteOnceOnMiss " + (backExecutionOnceEnabled ? "enabled" : "disabled"));
